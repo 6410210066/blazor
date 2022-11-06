@@ -1,0 +1,17 @@
+﻿@using TodoExample.Data.Services
+@inject ITodoTicketService TodoTicketService
+
+<Table DataSource="@data">
+    <Column TData="string" Sortable="true" @bind-Field="@context.TodoName"></Column>
+    <Column TData="string" @bind-Field="@context.TodoDescription"></Column>
+</Table>
+
+
+@code {
+    List<TodoTicket> data =new List<TodoTicket>();
+
+    protected override void OnInitialized()
+    {
+        data = TodoTicketService.GetAllTickets();
+    }
+}

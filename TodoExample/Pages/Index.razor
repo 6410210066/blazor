@@ -1,0 +1,151 @@
+﻿@page "/"
+@using System.ComponentModel.DataAnnotations
+@inject IVTodoTicketService VTodoTicketService
+@inject ITodoCategoryService TodoCategoryService
+@inject ITodoStatusService TodoStatusService
+@inject ITodoTicketService TodoTicketService
+<PageTitle>Todo</PageTitle>
+
+
+<Space Style="display:flex; justify-content:space-between;" Class="mb-3">
+    <SpaceItem>
+        <Title Level="3" Class="mb-0">Todo</Title>
+    </SpaceItem>
+    <SpaceItem>
+        <Button Icon="plus" Shape="@ButtonShape.Circle" OnClick="onAddButtonClicked"></Button>
+    </SpaceItem>
+
+</Space>
+<Card Style="border-radius: 16px;background-color:#faf9f5;">
+    <Space Direction="DirectionVHType.Vertical" Style="width:100%;" Size="@("16")">
+        @foreach (var item in ticketList)
+        {
+            <SpaceItem>
+                <Card Style="border-radius: 16px;">
+                    <Space Size="@("20")" Direction="DirectionVHType.Vertical">
+                        <SpaceItem>
+                            <Tag PresetColor="@PresetColor.Blue">@item.CategoryName</Tag>
+                        </SpaceItem>
+
+                        <SpaceItem>
+                            <Text Strong="true">@item.TodoName</Text>
+                        </SpaceItem>
+                        <SpaceItem>
+                            <Text>@item.TodoDescription</Text>
+                        </SpaceItem>
+                        <SpaceItem>
+                            <Button Danger="true" Icon="delete" OnClick="()=>OnDeleteClicked(item)">Delete</Button>
+                        </SpaceItem>
+                    </Space>
+                </Card>
+            </SpaceItem>
+
+        }
+    </Space>
+
+</Card>
+
+<Modal Title="Add Task"
+       Visible="@_visible"
+       OnOk="@HandleOk"
+       OnCancel="@HandleCancel">
+    <Form @ref="form" Model="@_model">
+        <FormItem Label="Name">
+            <Input @bind-Value="@context.TodoName" Placeholder="กรอกชื่อที่นี้"></Input>
+        </FormItem>
+        <FormItem Label="Dexcription">
+            <TextArea @bind-Value="@context.TodoDescription" Rows="4"></TextArea>
+        </FormItem>
+        <FormItem Label="Category">
+            <Select @bind-Value="@context.CategoryId" 
+                    TItem="TodoCategory" 
+                    TItemValue="string" 
+                    LabelName="@nameof(TodoCategory.CategoryName)"
+                    ValueName="@nameof(TodoCategory.CategoryId)"
+                    DataSource="TodoCategoryService.GetAll()"
+                    DefaultActiveFirstOption="true">
+                </Select>
+        </FormItem>
+        <FormItem Label="Status">
+            <Select @bind-Value="@context.StatusId"
+                    TItem="TodoStatus"
+                    TItemValue="string"
+                    LabelName="@nameof(TodoStatus.TodoStatusName)"
+                    ValueName="@nameof(TodoStatus.TodoStatusId)"
+                    DataSource="TodoStatusService.GetAllStatus()"
+                    DefaultActiveFirstOption="true">
+            </Select>
+        </FormItem>
+    </Form>
+</Modal>
+
+@code
+{
+    List<VTodoTicket> ticketList = new List<VTodoTicket>();
+
+    TodoTicketFormModal _model = new TodoTicketFormModal();
+
+    bool _visible = false;
+
+    Form<TodoTicketFormModal>? form;
+
+    private async Task HandleOk()
+    {
+        if (form.Validate()){
+            await TodoTicketService.InsertTicket(new TodoTicket(){
+                TodoName = _model.TodoName,
+                TodoDescription = _model.TodoDescription,
+                CategoryId = _model.CategoryId,
+                TodoStatusId = _model.StatusId
+            });
+            GetData();
+            _visible = false;
+        }
+
+    }
+
+    private void HandleCancel()
+    {
+        _visible = false;
+    }
+
+    protected override void OnInitialized()
+    {
+        GetData();
+    }
+
+    public void GetData(){
+        ticketList = VTodoTicketService.GetAll();
+    }
+
+    private void onAddButtonClicked()
+    {
+        _visible = true;
+    }
+
+    private async Task OnDeleteClicked(VTodoTicket ticket){
+        await TodoTicketService.DeleteTicket(new TodoTicket()
+            {
+                TodoTicketId = ticket.TodoTicketId,
+                TodoName = ticket.TodoName,
+                TodoDescription = ticket.TodoDescription,
+                CategoryId = ticket.CategoryId,
+                TodoStatusId = ticket.TodoStatusId
+            });
+
+            GetData();
+    }
+
+    public class TodoTicketFormModal
+    {
+        public string TodoTicketId { get; set; }
+        [Required]
+        public string TodoName { get; set; }
+        public string TodoDescription { get; set; }
+        [Required]
+        public string CategoryId { get; set; }
+        [Required]
+        public string StatusId { get; set; }
+
+    }
+}

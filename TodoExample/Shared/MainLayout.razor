@@ -1,0 +1,26 @@
+﻿@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
+
+<PageTitle>Todo App</PageTitle>
+
+<Layout Style="min-height: 100vh;">
+    <Header>
+        <Title Level="2" Style="margin-bottom:0">
+            My Todo
+        </Title>
+    </Header>
+    <Content Style="padding: 2rem;">
+        @Body
+    </Content>
+    <FooterExample />
+</Layout>
+
+<style>
+    .ant-layout-header {
+        display: flex;
+        align-items: center;
+        padding: 0 2rem;
+        background: #fff;
+        box-shadow: 0 2px 8px #f0f1f2;
+    }
+</style>
